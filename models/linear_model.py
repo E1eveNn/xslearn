@@ -147,13 +147,11 @@ class LogisticRegression(BaseLinearModel):
             X = np.expand_dims(X, axis=0)
         y_hat = np.dot(X, self.w) + self.b
         y_hat = self.sigmoid(y_hat)
-        return y_hat if is_train else self.eval(y_hat)
-
-
-    def eval(self, y_hat):
-        y_hat[y_hat > 0.5] = 1
-        y_hat[y_hat <= 0.5] = 0
+        if not is_train:
+            y_hat[y_hat > 0.5] = 1
+            y_hat[y_hat <= 0.5] = 0
         return y_hat
+
 
 
 

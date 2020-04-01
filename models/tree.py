@@ -36,7 +36,9 @@ class TreeNode():
                 return self.predict(node.child_node_dict['others'], X, c_val + node.c)
         else:
             T = -1
+
             feature_val = float(feature_val)
+
             for val in node.child_node_dict.keys():
                 if val[0] == '>':
                     T = float(val[1:])
@@ -181,7 +183,7 @@ class BaseDecisionTree(BaseModel):
             plotTree.yOff = plotTree.yOff - 1.0 / plotTree.totalD
             for key in secondDict.keys():
                 if type(secondDict[key]).__name__ == 'dict':
-                    plotTree(secondDict[key], node.child_node_dict[key], criterion, (cntrPt[0], cntrPt[1] - 0.07), str(key))
+                    plotTree(secondDict[key], node.child_node_dict[key], criterion, (cntrPt[0], cntrPt[1] - 0.03), str(key))
                 else:
 
                     plotTree.xOff = plotTree.xOff + 1.0 / plotTree.totalW
@@ -193,7 +195,7 @@ class BaseDecisionTree(BaseModel):
                     text += '\nsamples = ' + str(len(sub_node.sample_lists))
                     text += '\nclass = ' + str(sub_node.label)
 
-                    plotNode(text, (plotTree.xOff, plotTree.yOff), (cntrPt[0], cntrPt[1] - 0.07), leafNode)
+                    plotNode(text, (plotTree.xOff, plotTree.yOff), (cntrPt[0], cntrPt[1] - 0.03), leafNode)
                     plotMidText((plotTree.xOff, plotTree.yOff), cntrPt, str(key))
             plotTree.yOff = plotTree.yOff + 1.0 / plotTree.totalD
 
@@ -604,24 +606,22 @@ class CartTree(BaseDecisionTree):
             node.sample_lists = X
             self.leaf_nums += 1
             return node.label
-        if self.is_classify:
-            if self.isSameClass(y):
-                node.label = y[0]
-                node.leaf = True
-                node.gini = self.calc_gini_index(y)
-                node.sample_lists = X
-                self.leaf_nums += 1
-                return node.label
-            if len(attr_sets) == 0:
-                node.label = self.majorityClass(y)
-                node.leaf = True
-                node.gini = self.calc_gini_index(y)
-                node.sample_lists = X
-                self.leaf_nums += 1
-                return node.label
-        else:
-            if len(y) == 0:
-                return 
+
+        if self.isSameClass(y):
+            node.label = y[0]
+            node.leaf = True
+            node.gini = self.calc_gini_index(y)
+            node.sample_lists = X
+            self.leaf_nums += 1
+            return node.label
+        if len(attr_sets) == 0:
+            node.label = self.majorityClass(y)
+            node.leaf = True
+            node.gini = self.calc_gini_index(y)
+            node.sample_lists = X
+            self.leaf_nums += 1
+            return node.label
+
 
 
         self.features += 1
@@ -730,20 +730,31 @@ class CartTree(BaseDecisionTree):
                 sorted_feature_list = sorted(feature_list)
                 for f in range(len(sorted_feature_list) - 1):
                     T = 0.5 * (sorted_feature_list[f] + sorted_feature_list[f + 1])
-                    X_equal, X_unequal, y_equal, y_unequal = self.split_data_by_T(X, j, T, y)
+                    X_pos, X_neg, y_pos, y_neg = self.split_data_by_T(X, j, T, y)
                     if self.is_classify:
-                        equal_prob = len(y_equal) / m
-                        unequal_prob = len(y_unequal) / m
-                        split_val = equal_prob * self.calc_gini_index(y_equal) + unequal_prob * self.calc_gini_index(y_unequal)
+                        equal_prob = len(y_pos) / m
+                        unequal_prob = len(y_neg) / m
+                        split_val = equal_prob * self.calc_gini_index(y_pos) + unequal_prob * self.calc_gini_index(y_neg)
                     else:
-                        c2 = np.mean(y_equal)[0]
-                        c1 = np.mean(y_unequal)[0]
-                        split_val = np.sum((y_equal - c1) ** 2 + (y_unequal - c2) ** 2)
+                        if len(y_pos) == 0:
+                            c1 = np.mean(y_neg)
+                            c2 = 0
+                            split_val = np.sum((y_neg - c1) ** 2)
+
+                        elif len(y_neg) == 0:
+                            c1 = 0
+                            c2 = np.mean(y_pos)
+                            split_val = np.sum((y_pos - c2) ** 2)
+                        else:
+                            c1 = np.mean(y_neg)
+                            c2 = np.mean(y_pos)
+                            split_val = np.sum((y_neg - c1) ** 2) + np.sum((y_pos - c2) ** 2)
 
                     if split_val <= best_split_val:
                         best_split_val = split_val
                         best_feature_index = j
                         best_feature_val = T
+
 
         return best_feature_index, best_feature_val, c1, c2
 
@@ -777,6 +788,7 @@ class CartTree(BaseDecisionTree):
         if X.ndim > 1 and X.shape[0] > 1:
             pred = np.zeros((X.shape[0], 1))
             for i, x in enumerate(X):
+                x = x[np.newaxis, ...]
                 pred[i] = self.root.predict(self.root, x, self.is_classify)
             return pred
         return self.root.predict(self.root, X, self.is_classify)

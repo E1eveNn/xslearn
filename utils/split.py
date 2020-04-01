@@ -33,7 +33,9 @@ def train_test_split(X, y=None,**kwargs):
 
 
 
-def sampling2d(X, y, bootstrap, nums, axis=0):
+def sampling2d(X, y, bootstrap, nums, axis=0, random_state=None):
+    if random_state is not None:
+        np.random.seed(random_state)
     if axis == 0:
         m = len(X)
     else:
@@ -49,9 +51,4 @@ def sampling2d(X, y, bootstrap, nums, axis=0):
         sampled_X = X[:, sample_idx]
         sampled_y = y
     return sampled_X, sampled_y, sample_idx
-
-
-
-
-
 
