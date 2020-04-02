@@ -19,7 +19,7 @@ plt.legend()
 plt.show()
 ```
 
-![iris_-11](D:%5CPythonProjects%5Cxslearn_package%5Cxslearn%5Cexamples%5Ciris_-11.png)
+![iris_-11](https://github.com/eLeVeNnN/xslearn/blob/master/examples/iris_-11.png)
 
 ```python
 from xslearn.utils import train_test_split
@@ -65,4 +65,4 @@ use $model.summary()$ to see training details.
 
 
 
-![perception_train](D:%5CPythonProjects%5Cxslearn_package%5Cxslearn%5Cexamples%5Cperception_train.png)
+![perception_train](https://github.com/eLeVeNnN/xslearn/blob/master/examples/perception_train.png)

@@ -19,7 +19,7 @@ plt.legend()
 plt.show()
 ```
 
-![iris_-11](D:%5CPythonProjects%5Cxslearn_package%5Cxslearn%5Cexamples%5Ciris_01.png)
+![iris_-11](https://github.com/eLeVeNnN/xslearn/blob/master/examples/iris_01.png)
 
 ```python
 from xslearn.utils import train_test_split

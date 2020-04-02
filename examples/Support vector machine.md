@@ -73,8 +73,3 @@ accuracy on test data is  0.75
 ```
 
 
-
-
-
-
-
