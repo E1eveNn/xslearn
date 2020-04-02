@@ -73,5 +73,4 @@ use $model.visualize()$ to see the constructed tree.
 model.visualize()
 ```
 
-<img src="D:%5CPythonProjects%5Cxslearn_package%5Cxslearn%5Cexamples%5Cdt.png" alt="dt" style="zoom:200%;" />
-
+![Cart Decision Tree](https://github.com/eLeVeNnN/xslearn/blob/master/examples/dt.png)
