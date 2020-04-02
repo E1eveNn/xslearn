@@ -1,6 +1,4 @@
-from models.base import *
-import operator
-import math
+from .base import *
 from pylab import *
 
 
@@ -28,12 +26,13 @@ class TreeNode():
                 return node.c + c_val
         feature_index = node.feature_index
         feature_val = X[:, feature_index]
-        if str(feature_val).isalnum():
+        if str(feature_val[0]).isalnum() or str(feature_val[0]).isalpha():
             # discrete feature
+            feature_val = str(feature_val[0])
             try:
-                return self.predict(node.child_node_dict[feature_val], X, c_val + node.c)
+                return self.predict(node.child_node_dict[feature_val], X, is_classify, c_val + node.c)
             except KeyError:
-                return self.predict(node.child_node_dict['others'], X, c_val + node.c)
+                return self.predict(node.child_node_dict['others'], X, is_classify, c_val + node.c)
         else:
             T = -1
 
@@ -54,12 +53,12 @@ class TreeNode():
 
 
 class BaseDecisionTree(BaseModel):
-    def __init__(self, max_depth=None, max_features=None, max_leaf_nodes=None, criterion='gini', *args, **kwargs):
+    def __init__(self, max_depth=None, max_features=None, max_leaf_nodes=None, criterion='gini', attr_sets=None, *args, **kwargs):
         super(BaseDecisionTree, self).__init__()
         self.root = None
         self.X = None
         self.y = None
-        self.attr_sets = None
+        self.attr_sets = attr_sets
         self.tree_dict = None
         self.max_depth = max_depth
         self.max_features = max_features
@@ -70,15 +69,15 @@ class BaseDecisionTree(BaseModel):
         self.leaf_nums = 0
 
 
-    def fit(self, X, y, attr_sets=None):
+    def fit(self, X, y, *args, **kwargs):
+        self.feature_mask = kwargs.pop('feature_mask', None)
         self.root = TreeNode(parent_node='root')
         self.X = np.array(X)
         self.y = np.array(y)
+        if self.attr_sets is None:
+            self.attr_sets = ['attr%d' % i for i in range(X.shape[1])]
         if self.y.ndim > 1:
             self.y = self.y.flatten()
-        if attr_sets is None:
-            attr_sets = ['attr%d' % i for i in range(self.X.shape[1])]
-        self.attr_sets = attr_sets
 
 
 
@@ -336,6 +335,8 @@ class ID3Tree(BaseDecisionTree):
         best_T = None
         for attr in attr_sets:
             j = self.attr_sets.index(attr)
+            if self.feature_mask is not None and j not in self.feature_mask:
+                continue
             feature_list = [x[j] for x in X]
             if str(feature_list[0]).isalnum():
                 # discrete feature
@@ -505,6 +506,8 @@ class C45Tree(BaseDecisionTree):
         best_T = None
         for attr in attr_sets:
             j = self.attr_sets.index(attr)
+            if self.feature_mask is not None and j not in self.feature_mask:
+                continue
             feature_list = [x[j] for x in X]
             if str(feature_list[0]).isalnum():
                 # discrete feature
@@ -622,8 +625,6 @@ class CartTree(BaseDecisionTree):
             self.leaf_nums += 1
             return node.label
 
-
-
         self.features += 1
         split_feature_index, split_feature_val, c1, c2 = self.chooseBestFeaturToSplit(X, y, attr_sets)
         node.feature_index = split_feature_index
@@ -702,6 +703,8 @@ class CartTree(BaseDecisionTree):
         c2 = 0
         for attr in attr_sets:
             j = self.attr_sets.index(attr)
+            if self.feature_mask is not None and j not in self.feature_mask:
+                continue
             feature_list = [x[j] for x in X]
             if str(feature_list[0]).isalnum():
                 # discrete feature
@@ -754,7 +757,6 @@ class CartTree(BaseDecisionTree):
                         best_split_val = split_val
                         best_feature_index = j
                         best_feature_val = T
-
 
         return best_feature_index, best_feature_val, c1, c2
 

@@ -1,8 +1,9 @@
-from models.base import *
-from models.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from .base import *
+from .tree import DecisionTreeClassifier, DecisionTreeRegressor
 import copy
 import threading
-from utils.split import sampling2d
+from ..utils.split import sampling2d
+
 
 
 
@@ -108,8 +109,8 @@ class BaggingThread(threading.Thread):
         # sample sampling
         sampled_X, sampled_y, sample_idx = sampling2d(self.X, self.y, self.bootstrap, self.max_samples, random_state=self.random_state)
         # feature sampling
-        sampled_X, sampled_y, feature_idx = sampling2d(sampled_X, sampled_y, self.bootstrap_features, self.max_features, axis=1, random_state=self.random_state)
-        self.estimator.fit(sampled_X, sampled_y)
+        feature_idx = sampling2d(sampled_X, sampled_y, self.bootstrap_features, self.max_features, axis=1, random_state=self.random_state)
+        self.estimator.fit(sampled_X, sampled_y, feature_mask=feature_idx)
         if self.oob_score:
             valid_idx = [idx for idx in range(m) if idx not in sample_idx]
             valid_X = self.X[valid_idx, :]
@@ -166,9 +167,9 @@ class BaseBagging(BaseModel):
         elif self.max_features == 'auto':
             self.max_features = int(np.ceil(np.log2(n)))
 
-        for i in range(self.n_iter // self.n_jobs):
-            self.thread_list.append([1] * self.n_jobs)
-        self.thread_list.append([1] * (self.n_iter % self.n_jobs))
+        # for i in range(self.n_iter // self.n_jobs):
+        #     self.thread_list.append([1] * self.n_jobs)
+        # self.thread_list.append([1] * (self.n_iter % self.n_jobs))
         return X, y
 
 
@@ -213,7 +214,7 @@ class BaggingClassifier(BaseBagging):
 
 
 class RandomForestClassifier(BaggingClassifier):
-    def __init__(self, n_estimators=10, criterion='gini', max_depth=None, max_samples=None,max_features='auto', max_leaf_nodes=None, bootstrap=True, oob_score=False, n_jobs=-1, verbose=0, random_state=None):
+    def __init__(self, n_estimators=10, criterion='gini', max_depth=None, max_samples=None, max_features='auto', max_leaf_nodes=None, bootstrap=True, oob_score=False, n_jobs=-1, verbose=0, random_state=None):
         super(RandomForestClassifier, self).__init__(base_estimator=DecisionTreeClassifier(criterion=criterion, max_depth=max_depth, max_features=None, max_leaf_nodes=max_leaf_nodes), n_estimators=n_estimators, max_samples=max_samples, max_features=max_features, bootstrap=bootstrap, oob_score=oob_score, n_jobs=n_jobs, verbose=verbose, random_state=random_state)
 
 

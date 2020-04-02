@@ -2,7 +2,9 @@ import numpy as np
 
 
 
-def train_test_split(X, y=None,**kwargs):
+
+def train_test_split(X, y,**kwargs):
+    X, y = np.asarray(X), np.asarray(y)
     assert len(X) != 0, "X can not be empty~"
     test_size = kwargs.pop('test_size', None)
     train_size = kwargs.pop('train_size', None)
@@ -25,11 +27,20 @@ def train_test_split(X, y=None,**kwargs):
         np.random.seed(random_state)
 
     n_samples = len(X)
-
     n_index = list(range(n_samples))
+    if shuffle:
+        np.random.shuffle(n_index)
+        X, y = X[n_index], y[n_index]
+
+    train_nums = n_samples - round(n_samples * test_size)
     if stratify:
         # stratified sampling
         assert y is not None, 'make sure parameter y is not None when using stratified sampling!'
+        train_X, test_X, train_y, test_y = [], [], [], []
+    else:
+        train_X, test_X, train_y, test_y = X[:train_nums], X[train_nums:], y[:train_nums], y[train_nums:]
+    return train_X, test_X, train_y, test_y
+
 
 
 
@@ -47,8 +58,8 @@ def sampling2d(X, y, bootstrap, nums, axis=0, random_state=None):
     if axis == 0:
         sampled_X = X[sample_idx, :]
         sampled_y = y[sample_idx]
+        return sampled_X, sampled_y, sample_idx
     else:
-        sampled_X = X[:, sample_idx]
-        sampled_y = y
-    return sampled_X, sampled_y, sample_idx
+        return sample_idx
+
 

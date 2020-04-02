@@ -1,4 +1,4 @@
-from models.base import *
+from .base import *
 
 
 
@@ -47,6 +47,10 @@ class BaseSVM(BaseModel):
         :param args:
         :return: (n_sample1, n_sample2)
         '''
+        if x1.ndim == 1:
+            x1 = x1[np.newaxis, ...]
+        if x2.ndim == 1:
+            x2 = x2[np.newaxis, ...]
         m = x1.shape[0]
         n = x2.shape[0]
         K = np.zeros((m, n))
@@ -64,6 +68,10 @@ class BaseSVM(BaseModel):
         :param args:
         :return: (n_sample1, n_sample2)
         '''
+        if x1.ndim == 1:
+            x1 = x1[np.newaxis, ...]
+        if x2.ndim == 1:
+            x2 = x2[np.newaxis, ...]
         m = x1.shape[0]
         n = x2.shape[0]
         K = np.zeros((m, n))
@@ -78,14 +86,14 @@ class BaseSVM(BaseModel):
 
 
 class SVC(BaseSVM):
-    def __init__(self, kernel='linear', C=1, b=0, tol=1e-3,  degree=3, gamma='auto', beta=1, theta=-1, n_iter=10, verbose=2):
+    def __init__(self, kernel='linear', C=1, tol=1e-3,  degree=3, gamma='auto', beta=1, theta=-1, n_iter=10, verbose=2):
         super(SVC, self).__init__(kernel, C, degree, gamma, beta, theta, n_iter, verbose)
         self.alphas = None
         self.tol = tol
         self.E = None
         self.g = None
         self.m = None
-        self.b = b
+        self.b = None
         self.changed_pairs = []
         self.support_vector_idx = None
         self.X = None
@@ -108,7 +116,9 @@ class SVC(BaseSVM):
         self.alphas = np.zeros((self.m, 1))
         self.g = np.zeros((self.m, 1))
         self.E = np.zeros((self.m, 1))
+        self.b = 0
         self.calc_E(X, y, range(self.m))
+
 
 
     @count_time
@@ -233,6 +243,8 @@ class SVC(BaseSVM):
 
 
     def predict(self, X, is_train=False, *args):
+        if X.ndim == 1:
+            X = X[np.newaxis, ...]
         pred = np.multiply(self.alphas, self.y).T.dot(self.kernel(self.X, X)) + self.b
         return pred if is_train else np.sign(pred)
 

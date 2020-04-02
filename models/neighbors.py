@@ -1,4 +1,4 @@
-from models.base import BaseModel
+from .base import BaseModel
 import numpy as np
 
 
@@ -23,43 +23,22 @@ class KNeighborsClassifier(BaseModel):
             x1 = np.expand_dims(x1, axis=0)
         if x2.ndim == 1:
             x2 = np.expand_dims(x2, axis=0)
-        dist = np.power(np.sum(np.abs(x1 - x2) ** self.p, axis=1, keepdims=True), 1 / self.p)
+        x1 = x1[:, np.newaxis, :]
+        x2 = x2[np.newaxis, :]
+        dist = np.power(np.sum(np.abs(x1 - x2) ** self.p, axis=2), 1 / self.p)
         return dist
 
 
-    def predict(self, X):
+    def predict(self, X, is_train=False, *args):
+        X = np.asarray(X)
         dist = self.calc_dist(X, self.X)
-        closet_index = np.argsort(dist, axis=0)[:self.k]
+        closet_index = np.argsort(dist, axis=1)[:, :self.k]
         closet_label = self.y[closet_index]
-        majority_label = self.counter(closet_label)
-        return majority_label
-
-    def counter(self, label_list):
-        label_dict = {}
-
-        for label in label_list:
-            if label[0] not in label_dict.keys():
-                label_dict[label[0]] = 0
-            else:
-                label_dict[label[0]] += 1
-        majority_label_count = 0
-        majority_label = label_list[0]
-        for label, count in label_dict.items():
-            if count > majority_label_count:
-                majority_label_count = count
-                majority_label = label
+        majority_label = np.zeros((X.shape[0], 1))
+        for i in range(len(closet_label)):
+            t = closet_label[i].tolist()
+            majority_label[i] = max(t, key=t.count)
         return majority_label
 
 
-    def score(self, X, y, reduction='mean'):
-        pred = np.zeros_like(y)
-        for i in range(X.shape[0]):
-            pred[i] = self.predict(X[i])
-
-        if reduction == 'mean':
-            acc = np.mean(pred == y)
-        else:
-            acc = np.sum(pred == y)
-        print('accuracy on test data is ', acc)
-        return acc
 
