@@ -60,6 +60,6 @@ accuracy on test data is  1.0
 
 use $model.summary()$ to see training details.
 
-
-
-![lr_train](https://github.com/eLeVeNnN/xslearn/blob/master/examples/lr_train.png)
+<div align=center>
+  <img src="https://github.com/eLeVeNnN/xslearn/blob/master/examples/lr_train.png" width=300px, height=300px>
+</div>
