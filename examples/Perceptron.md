@@ -64,5 +64,5 @@ accuracy on test data is  1.0
 use $model.summary()$ to see training details.
 
 <div align=center>
-  <img src="https://github.com/eLeVeNnN/xslearn/blob/master/examples/perception_train.png" width="">
+  <img src="https://github.com/eLeVeNnN/xslearn/blob/master/examples/perception_train.png" width="300px">
 </div>
